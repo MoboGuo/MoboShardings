@@ -1,0 +1,65 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    root: info
+
+spring:
+  shardingsphere:
+    props:
+      sql.show: true
+
+    ## 数据源
+    datasource:
+      names: ds0,ds1
+      ds0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/xdclass_shop_order_0?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        username: root
+        password: GUOmb.960113
+      ds1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/xdclass_shop_order_1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        username: root
+        password: GUOmb.960113
+
+    sharding:
+      tables:
+        ##配置分表规则
+        product_order:
+          # 指定product_order表的数据分布情况，配置数据节点,行表达式标识符使用 ${...} 或 $->{...}，
+          # 但前者与 Spring 本身的文件占位符冲突，所以在 Spring 环境中建议使用 $->{...}
+#          actual-data-nodes: ds0.product_order_$->{0..1}
+          ##多数据源需要表明
+          actual-data-nodes: ds$->{0..1}.product_order_$->{0..1}
+          # 指定product_order表的分片策略，分片策略包括【分片键和分片算法】
+          table-strategy:
+            inline:
+              sharding-column: id
+              algorithm-expression: product_order_$->{id % 2}
+          ##配置分库策略(针对某一个表)
+          database-strategy:
+            inline:
+              sharding-column: user_id
+              algorithm-expression: ds$->{user_id % 2 }
+          ##配置主键生成规则
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        ad_config:
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+      ##广播表，如果有多个，用逗号隔开
+      broadcast-tables: ad_config
+
+      ##默认分库策略
+#      default-database-strategy:
+#        inline:
+#          sharding-column: user_id
+#          algorithm-expression: ds$->{user_id % 2 }
+
+
