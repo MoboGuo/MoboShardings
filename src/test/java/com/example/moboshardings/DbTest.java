@@ -7,14 +7,15 @@ import com.example.moboshardings.entity.AdConfig;
 import com.example.moboshardings.entity.ProductOrder;
 import com.example.moboshardings.mapper.AdConfigMapper;
 import com.example.moboshardings.mapper.ProductOrderMapper;
+import com.example.moboshardings.structUtils.ProductOrderStruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.api.hint.HintManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -25,11 +26,17 @@ import java.util.UUID;
 @Slf4j
 public class DbTest {
 
-    @Autowired
+    @Resource
     private ProductOrderMapper productOrderMapper;
+    @Resource
+    private  AdConfigMapper adConfigMapper;
 
-    @Autowired
-    private AdConfigMapper adConfigMapper;
+    @Resource
+    private ProductOrderStruct productOrderStruct;
+
+
+    public DbTest() {
+    }
 
     @Test
     public void testSaveProductOrder() {
@@ -143,5 +150,12 @@ public class DbTest {
 
         //对应的value只做查询，不做sql解析
         productOrderMapper.selectList(new QueryWrapper<ProductOrder>().eq("id", 66L));
+    }
+
+    @Test
+    public void  testMapStruct() {
+        ProductOrder productOrder = productOrderMapper.selectOne(new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getId, 1661034226226511874L));
+        ProductOrder newRecord = productOrderStruct.copyProperties(productOrder);
+        System.out.println(newRecord);
     }
 }
