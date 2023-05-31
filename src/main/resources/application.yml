@@ -41,6 +41,12 @@ spring:
             standard:
               sharding-column: id
               precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
+              #复合分片
+#              sharding-column: user_id, id
+#              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomComplexKeysShardingAlgorithm
+#              范围分片，不加范围分片使用between and时报错
+              #hint分片：不需要指定分片键，
+#              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomDBHintShardingAlgorithm
 #              范围分片，不加范围分片使用between and时报错
               range-algorithm-class-name: com.example.moboshardings.strategy.CustomRangeShardingAlgorithm
 #            inline:
@@ -51,6 +57,8 @@ spring:
             standard:
               sharding-column: user_id
               precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
+              #复合分片，不需要指定分片键
+#              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
 #            inline:
 #              sharding-column: user_id
 #              algorithm-expression: ds$->{user_id % 2 }

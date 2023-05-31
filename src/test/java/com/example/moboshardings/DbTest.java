@@ -1,12 +1,14 @@
 package com.example.moboshardings;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.example.moboshardings.entity.AdConfig;
 import com.example.moboshardings.entity.ProductOrder;
 import com.example.moboshardings.mapper.AdConfigMapper;
 import com.example.moboshardings.mapper.ProductOrderMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shardingsphere.api.hint.HintManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,5 +112,36 @@ public class DbTest {
     public void testRangSelect() {
 //        productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().between(ProductOrder::getId,1L,1L));
         productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().between(ProductOrder::getId,1L,3L));
+    }
+
+    /**
+     * Description: 测试复合分片
+     * date: 2023/5/29 10:10
+     * @return void
+     */
+    @Test
+    public void testComplexSelect() {
+        productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getId,66L).eq(ProductOrder::getUserId,99L));
+    }
+
+
+    @Test
+    public void testHint() {
+        // 清除掉历史的规则
+        HintManager.clear();
+        //Hint分片策略必须要使用 HintManager工具类
+        HintManager hintManager = HintManager.getInstance();
+        // 设置库的分片健,value用于库分片取模，
+        hintManager.addDatabaseShardingValue("product_order",3L);
+
+        // 设置表的分片健,value用于表分片取模，
+        //hintManager.addTableShardingValue("product_order", 7L);
+        hintManager.addTableShardingValue("product_order", 8L);
+
+        // 如果在读写分离数据库中，Hint 可以强制读主库（主从复制存在一定延时，但在业务场景中，可能更需要保证数据的实时性）
+        //hintManager.setMasterRouteOnly();
+
+        //对应的value只做查询，不做sql解析
+        productOrderMapper.selectList(new QueryWrapper<ProductOrder>().eq("id", 66L));
     }
 }
