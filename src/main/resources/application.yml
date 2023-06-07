@@ -18,13 +18,13 @@ spring:
         driver-class-name: com.mysql.cj.jdbc.Driver
         jdbc-url: jdbc:mysql://localhost:3306/xdclass_shop_order_0?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
         username: root
-        password: GUOmb.960113
+        password: 960113
       ds1:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
         jdbc-url: jdbc:mysql://localhost:3306/xdclass_shop_order_1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
         username: root
-        password: GUOmb.960113
+        password: 960113
 
     sharding:
       tables:
@@ -32,32 +32,31 @@ spring:
         product_order:
           # 指定product_order表的数据分布情况，配置数据节点,行表达式标识符使用 ${...} 或 $->{...}，
           # 但前者与 Spring 本身的文件占位符冲突，所以在 Spring 环境中建议使用 $->{...}
-#          actual-data-nodes: ds0.product_order_$->{0..1}
-          ##多数据源需要表明
           actual-data-nodes: ds$->{0..1}.product_order_$->{0..1}
           # 指定product_order表的分片策略，分片策略包括【分片键和分片算法】
           table-strategy:
+            #hint分片
+            hint:
+              algorithm-class-name: com.example.moboshardings.strategy.CustomTableHintShardingAlgorithm
             #使用编写的分片规则进行分片，与inline功能相同
-            standard:
-              sharding-column: id
-              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
-              #复合分片
-#              sharding-column: user_id, id
-#              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomComplexKeysShardingAlgorithm
-#              范围分片，不加范围分片使用between and时报错
-              #hint分片：不需要指定分片键，
-#              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomDBHintShardingAlgorithm
-#              范围分片，不加范围分片使用between and时报错
-              range-algorithm-class-name: com.example.moboshardings.strategy.CustomRangeShardingAlgorithm
+#            standard:
+#              复合分片(同时指定多个分片键)，表达式也可以，如product_order_$->{id % 2}_$->{user_id % 2}
+#            complex:
+#              sharding-columns: user_id, id
+#              algorithm-class-name: com.example.moboshardings.strategy.CustomComplexKeysShardingAlgorithm
+#              sharding-column: id
+#              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
+##              范围分片，不加范围分片使用between and时报错
+#              range-algorithm-class-name: com.example.moboshardings.strategy.CustomRangeShardingAlgorithm
 #            inline:
 #              sharding-column: id
 #              algorithm-expression: product_order_$->{id % 2}
-          ##配置分库策略(针对某一个表)
           database-strategy:
-            standard:
-              sharding-column: user_id
-              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
-              #复合分片，不需要指定分片键
+            hint:
+              algorithm-class-name: com.example.moboshardings.strategy.CustomDBHintShardingAlgorithm
+            #使用编写的分片规则进行分片，与inline功能相同
+#            standard:
+#              sharding-column: user_id
 #              precise-algorithm-class-name: com.example.moboshardings.strategy.CustomTablePreciseShardingAlgorithm
 #            inline:
 #              sharding-column: user_id
@@ -77,18 +76,8 @@ spring:
 #            inline:
 #              sharding-column: product_order_id
 #              algorithm-expression: product_order_item_$->{product_order_id % 2}
-      ##绑定表
-#      binding-tables:
-#        - product_order,product_order_item
-      ##两种配置方式，推荐使用上面的，每组可以单独写
-#      binding-tables[0]: product_order,product_order_item
+#        ##绑定表
+#        binding-tables:
+#          - product_order,product_order_item
       ##广播表，如果有多个，用逗号隔开
       broadcast-tables: ad_config
-
-      ##默认分库策略
-#      default-database-strategy:
-#        inline:
-#          sharding-column: user_id
-#          algorithm-expression: ds$->{user_id % 2 }
-
-

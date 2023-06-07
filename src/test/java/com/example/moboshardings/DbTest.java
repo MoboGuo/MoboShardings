@@ -44,7 +44,7 @@ public class DbTest {
         for (int i = 0; i < 20; i++) {
             ProductOrder productOrder = new ProductOrder();
             productOrder.setCreateTime(new Date());
-            productOrder.setNickname("二当家分库分表i=" + i);
+            productOrder.setNickname("分库分表i=" + i);
             productOrder.setOutTradeNo(UUID.randomUUID().toString().substring(0, 32));
             productOrder.setPayAmount(100.00);
             productOrder.setState("PAY");
@@ -78,16 +78,51 @@ public class DbTest {
         adConfigDO.setType("ad");
 
         adConfigMapper.insert(adConfigDO);
+    }
 
+//    @Test
+//    public void testBinding() {
+//        List<Object> objects = productOrderMapper.listProduct();
+//        System.out.println(objects);
+//    }
+
+
+
+    @Test
+    public void testSelect() {
+        productOrderMapper.selectList( new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getId, 2L));
     }
 
     @Test
-    public void testBinding() {
-        List<Object> objects = productOrderMapper.listProduct();
-        System.out.println(objects);
+    public void testNoSelect() {
+        productOrderMapper.selectList( new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getOutTradeNo, 2L));
+    }
+
+    @Test
+    public void testBothSelect() {
+        productOrderMapper.selectList( new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getOutTradeNo, 2L).eq(ProductOrder::getId, 2L));
+    }
+
+    @Test
+    public void testDBPartitionKeySelect() {
+        productOrderMapper.selectList( new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getUserId, 2L));
+    }
+
+    @Test
+    public void testTablePartitionKeySelect() {
+        productOrderMapper.selectList( new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getId, 2L));
+    }
+
+    @Test
+    public void testBothPartitionKeySelect() {
+        productOrderMapper.selectList( new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getId, 2L).eq(ProductOrder::getUserId, 2L));
     }
 
 
+    @Test
+    public void testBindSelect() {
+        productOrderMapper.listProduct(2L);
+    }
     /**
      * Description: 有分片键
      * date: 2023/5/24 14:17
@@ -118,7 +153,7 @@ public class DbTest {
     @Test
     public void testRangSelect() {
 //        productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().between(ProductOrder::getId,1L,1L));
-        productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().between(ProductOrder::getId,1L,3L));
+        productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().between(ProductOrder::getId,1L,1L).eq(ProductOrder::getUserId, 2L));
     }
 
     /**
@@ -129,6 +164,7 @@ public class DbTest {
     @Test
     public void testComplexSelect() {
         productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getId,66L).eq(ProductOrder::getUserId,99L));
+//        productOrderMapper.selectList(new LambdaQueryWrapper<ProductOrder>().eq(ProductOrder::getOutTradeNo, 2L));
     }
 
 
